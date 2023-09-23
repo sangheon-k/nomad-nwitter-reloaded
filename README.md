@@ -35,3 +35,12 @@ react: v18.2.0s
 
 using vite
 ```
+
+## Library
+
+```js
+react-router-dom@6.14.2
+styled-reset
+styled-components@6.0.7
+@types/styled-components
+```
