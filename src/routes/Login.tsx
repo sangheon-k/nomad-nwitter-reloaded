@@ -3,8 +3,9 @@ import { auth } from '../firebase';
 import { Link, useNavigate } from 'react-router-dom';
 import { FirebaseError } from 'firebase/app';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import GithubLoginButton from '../components/GithubLoginButton';
+import GoogleLoginButton from '../components/GoogleLoginButton';
 import * as Styled from '../components/auth-components';
-import GithubButton from '../components/GithubButton';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -63,7 +64,8 @@ export default function Login() {
         Don't have an account?{' '}
         <Link to='/create-account'>Create one &rarr;</Link>
       </Styled.Switcher>
-      <GithubButton />
+      <GithubLoginButton />
+      <GoogleLoginButton />
     </Styled.Wrapper>
   );
 }

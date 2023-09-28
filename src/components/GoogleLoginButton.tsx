@@ -1,13 +1,13 @@
-import { GithubAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import styled from 'styled-components';
 import { auth } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 
-export default function GithubButton() {
+export default function GoogleLoginButton() {
   const navigate = useNavigate();
   const onClick = async () => {
     try {
-      const provider = new GithubAuthProvider();
+      const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
       navigate('/');
     } catch (e) {
@@ -17,8 +17,8 @@ export default function GithubButton() {
 
   return (
     <Button onClick={onClick}>
-      <Logo src='/github-logo.svg' />
-      Continue with Github
+      <Logo src='/google-logo.svg' />
+      Sign in with Google
     </Button>
   );
 }
@@ -29,7 +29,7 @@ const Button = styled.span`
   align-items: center;
   justify-content: center;
   width: 100%;
-  margin-top: 50px;
+  margin-top: 10px;
   color: black;
   font-weight: 500;
   padding: 10px 20px;

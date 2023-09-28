@@ -3,8 +3,9 @@ import { useState } from 'react';
 import { auth } from '../firebase';
 import { Link, useNavigate } from 'react-router-dom';
 import { FirebaseError } from 'firebase/app';
+import GithubLoginButton from '../components/GithubLoginButton';
+import GoogleLoginButton from '../components/GoogleLoginButton';
 import * as Styled from '../components/auth-components';
-import GithubButton from '../components/GithubButton';
 
 export default function CreateAccount() {
   const navigate = useNavigate();
@@ -32,7 +33,6 @@ export default function CreateAccount() {
         email,
         password
       );
-      console.log(credentials.user);
       await updateProfile(credentials.user, {
         displayName: name,
       });
@@ -78,7 +78,8 @@ export default function CreateAccount() {
       <Styled.Switcher>
         Already have an account? <Link to='/login'>Log in &rarr;</Link>
       </Styled.Switcher>
-      <GithubButton />
+      <GithubLoginButton />
+      <GoogleLoginButton />
     </Styled.Wrapper>
   );
 }
