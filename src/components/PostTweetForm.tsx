@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import { auth, db, storage } from '../firebase';
+import { addDoc, collection, updateDoc } from 'firebase/firestore';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 export default function PostTweetForm() {
   const [isLoading, setLoading] = useState(false);
@@ -14,9 +17,42 @@ export default function PostTweetForm() {
       setFile(files[0]);
     }
   };
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user || tweet === '') return;
+
+    try {
+      setLoading(true);
+      const tweetsCollection = collection(db, 'tweets');
+      const doc = await addDoc(tweetsCollection, {
+        tweet,
+        createAt: Date.now(),
+        username: user.displayName || 'Anonymous',
+        userId: user.uid,
+      });
+      if (file) {
+        const locationRef = ref(
+          storage,
+          `tweets/${user.uid}-${user.displayName}/${doc.id}`
+        );
+        const result = await uploadBytes(locationRef, file);
+        const url = await getDownloadURL(result.ref);
+        await updateDoc(doc, { photoUrl: url });
+      }
+      setTweet('');
+      setFile(null);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
-    <Form>
+    <Form onSubmit={onSubmit}>
       <TextArea
+        rows={5}
+        maxLength={180}
         onChange={onChange}
         value={tweet}
         placeholder='What is happening?'
