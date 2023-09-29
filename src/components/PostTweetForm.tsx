@@ -33,7 +33,7 @@ export default function PostTweetForm() {
       const tweetsCollection = collection(db, 'tweets');
       const doc = await addDoc(tweetsCollection, {
         tweet,
-        createAt: Date.now(),
+        createdAt: Date.now(),
         username: user.displayName || 'Anonymous',
         userId: user.uid,
       });
