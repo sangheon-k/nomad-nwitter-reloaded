@@ -13,7 +13,13 @@ export default function PostTweetForm() {
   };
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
+    const maxSize = 1 * 1024 * 1024;
     if (files && files.length === 1) {
+      if (files[0].size > maxSize) {
+        alert('첨부파일은 1MB 미만의 파일만 업로드 가능합니다.');
+        setFile(null);
+        return;
+      }
       setFile(files[0]);
     }
   };
