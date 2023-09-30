@@ -5,13 +5,13 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_API_KEY,
-  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_APP_ID,
-  measurementId: import.meta.env.VITE_MEASUREMENT_ID,
+  apiKey: 'AIzaSyCZXIVYI2Bq8OKeVXQyjZ7iaCX803BQeec',
+  authDomain: 'nomad-nwitter-reloaded.firebaseapp.com',
+  projectId: 'nomad-nwitter-reloaded',
+  storageBucket: 'nomad-nwitter-reloaded.appspot.com',
+  messagingSenderId: '208798134767',
+  appId: '1:208798134767:web:8740dde64dcf502fbf061a',
+  measurementId: 'G-GWWE68Y8FB',
 };
 
 // Initialize Firebase
