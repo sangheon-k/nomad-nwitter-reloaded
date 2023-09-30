@@ -18,8 +18,9 @@ export default function Tweet({
   id,
 }: ITweet) {
   const [isLoading, setLoading] = useState(false);
+  const [isImgLoading, setImgLoading] = useState(false);
   const [isEditing, setEditing] = useState(false);
-  const [editTweet, setEditTweet] = useState('');
+  const [editTweet, setEditTweet] = useState(tweet);
   const user = auth.currentUser;
 
   const onDelete = async () => {
@@ -44,7 +45,6 @@ export default function Tweet({
     if (user?.uid !== userId) return;
 
     if (!isEditing) {
-      setEditTweet(tweet);
       setEditing(true);
     }
 
@@ -52,10 +52,10 @@ export default function Tweet({
       try {
         setLoading(true);
         await updateDoc(doc(db, 'tweets', id), { tweet: editTweet });
-        setEditing(false);
       } catch (e) {
         console.log(e);
       } finally {
+        setEditing(false);
         setLoading(false);
       }
     }
@@ -70,7 +70,7 @@ export default function Tweet({
         return;
       }
       try {
-        setLoading(true);
+        setImgLoading(true);
         const file: File | null = files[0];
         const photoRef = ref(storage, `tweets/${user?.uid}/${id}`);
         await deleteObject(photoRef);
@@ -80,7 +80,7 @@ export default function Tweet({
       } catch (e) {
         console.log(e);
       } finally {
-        setLoading(false);
+        setImgLoading(false);
       }
     }
   };
@@ -103,7 +103,7 @@ export default function Tweet({
           <ButtonWrap>
             <DeleteButton onClick={onDelete}>Delete</DeleteButton>
             <EditButton onClick={onEdit}>
-              {!isEditing ? 'EDIT' : isLoading ? 'Updating...' : 'Confirm'}
+              {!isEditing ? 'EDIT' : isLoading ? 'Loading...' : 'Confirm'}
             </EditButton>
           </ButtonWrap>
         ) : null}
@@ -111,8 +111,8 @@ export default function Tweet({
       <Column>
         {photoUrl ? (
           <PhotoWrap>
-            {isLoading ? (
-              <Loading>UPLOADING...</Loading>
+            {isImgLoading ? (
+              <Loading>LOADING...</Loading>
             ) : (
               <Photo src={photoUrl} />
             )}
