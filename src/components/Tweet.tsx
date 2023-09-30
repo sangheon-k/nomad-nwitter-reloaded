@@ -1,9 +1,14 @@
-import styled from 'styled-components';
+import { useState } from 'react';
 import { ITweet } from './TimeLine';
 import { auth, db, storage } from '../firebase';
 import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { deleteObject, ref } from 'firebase/storage';
-import { useState } from 'react';
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytes,
+} from 'firebase/storage';
+import styled from 'styled-components';
 
 export default function Tweet({
   username,
@@ -56,6 +61,30 @@ export default function Tweet({
     }
   };
 
+  const onEditFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { files } = e.target;
+    const maxSize = 1 * 1024 * 1024;
+    if (files && files.length === 1) {
+      if (files[0].size > maxSize) {
+        alert('첨부파일은 1MB 미만의 파일만 업로드 가능합니다.');
+        return;
+      }
+      try {
+        setLoading(true);
+        const file: File | null = files[0];
+        const photoRef = ref(storage, `tweets/${user?.uid}/${id}`);
+        await deleteObject(photoRef);
+        const result = await uploadBytes(photoRef, file);
+        const url = await getDownloadURL(result.ref);
+        await updateDoc(doc(db, 'tweets', id), { photoUrl: url });
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <Wrapper>
       <Column>
@@ -79,7 +108,28 @@ export default function Tweet({
           </ButtonWrap>
         ) : null}
       </Column>
-      <Column>{photoUrl ? <Photo src={photoUrl} /> : null}</Column>
+      <Column>
+        {photoUrl ? (
+          <PhotoWrap>
+            {isLoading ? (
+              <Loading>UPLOADING...</Loading>
+            ) : (
+              <Photo src={photoUrl} />
+            )}
+            {user?.uid === userId ? (
+              <EditButtonWrap>
+                <EditFileButton htmlFor='editFile'>Edit File</EditFileButton>
+                <EditFileInput
+                  onChange={onEditFile}
+                  type='file'
+                  id='editFile'
+                  accept='image/*'
+                />
+              </EditButtonWrap>
+            ) : null}
+          </PhotoWrap>
+        ) : null}
+      </Column>
     </Wrapper>
   );
 }
@@ -127,6 +177,17 @@ const Payload = styled.p`
   font-size: 18px;
 `;
 
+const PhotoWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  /* &:hover {
+    label {
+      display: flex;
+    }
+  } */
+`;
+
 const Photo = styled.img`
   width: 100px;
   height: 100px;
@@ -154,3 +215,30 @@ const EditButton = styled(DeleteButton)`
   background-color: #fff;
   color: black;
 `;
+
+const EditFileButton = styled.label`
+  width: 50px;
+  background-color: #fff;
+  color: black;
+  font-weight: 600;
+  border: 0;
+  font-size: 12px;
+  padding: 5px 10px;
+  text-transform: uppercase;
+  border-radius: 5px;
+  cursor: pointer;
+`;
+
+const EditFileInput = styled.input`
+  display: none;
+`;
+
+const Loading = styled.span`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100px;
+  height: 100px;
+`;
+
+const EditButtonWrap = styled.span``;
