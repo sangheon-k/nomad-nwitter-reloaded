@@ -1,8 +1,9 @@
 import styled from 'styled-components';
 import { ITweet } from './TimeLine';
 import { auth, db, storage } from '../firebase';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { deleteObject, ref } from 'firebase/storage';
+import { useState } from 'react';
 
 export default function Tweet({
   username,
@@ -11,7 +12,11 @@ export default function Tweet({
   userId,
   id,
 }: ITweet) {
+  const [isLoading, setLoading] = useState(false);
+  const [isEditing, setEditing] = useState(false);
+  const [editTweet, setEditTweet] = useState('');
   const user = auth.currentUser;
+
   const onDelete = async () => {
     const ok = confirm('Are you sure you want to delete this tweet?');
     if (!ok || user?.uid !== userId) return;
@@ -25,13 +30,53 @@ export default function Tweet({
       console.log(e);
     }
   };
+
+  const onChangeEdit = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setEditTweet(e.target.value);
+  };
+
+  const onEdit = async () => {
+    if (user?.uid !== userId) return;
+
+    if (!isEditing) {
+      setEditTweet(tweet);
+      setEditing(true);
+    }
+
+    if (isEditing) {
+      try {
+        setLoading(true);
+        await updateDoc(doc(db, 'tweets', id), { tweet: editTweet });
+        setEditing(false);
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <Wrapper>
       <Column>
         <Username>{username}</Username>
-        <Payload>{tweet}</Payload>
+        {isEditing ? (
+          <PayloadTextArea
+            rows={4}
+            maxLength={180}
+            onChange={onChangeEdit}
+            value={editTweet}
+          />
+        ) : (
+          <Payload>{tweet}</Payload>
+        )}
         {user?.uid === userId ? (
-          <DeleteButton onClick={onDelete}>Delete</DeleteButton>
+          <ButtonWrap>
+            <DeleteButton onClick={onDelete}>Delete</DeleteButton>
+            <EditButton onClick={onEdit}>
+              {!isEditing ? 'EDIT' : isLoading ? 'Updating...' : 'Confirm'}
+            </EditButton>
+          </ButtonWrap>
         ) : null}
       </Column>
       <Column>{photoUrl ? <Photo src={photoUrl} /> : null}</Column>
@@ -54,6 +99,29 @@ const Username = styled.span`
   font-size: 15px;
 `;
 
+const PayloadTextArea = styled.textarea`
+  border: 2px solid white;
+  margin: 10px 0;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-size: 16px;
+  color: white;
+  border: 2px solid #1d9bf0;
+  background-color: black;
+  width: 100%;
+  resize: none;
+  &::placeholder {
+    font-size: 16px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+      Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+      sans-serif;
+  }
+  &:focus {
+    outline: none;
+    border-color: #1d9bf0;
+  }
+`;
+
 const Payload = styled.p`
   margin: 10px 0;
   font-size: 18px;
@@ -63,6 +131,11 @@ const Photo = styled.img`
   width: 100px;
   height: 100px;
   border-radius: 15px;
+`;
+
+const ButtonWrap = styled.div`
+  display: flex;
+  gap: 7px;
 `;
 
 const DeleteButton = styled.button`
@@ -75,4 +148,9 @@ const DeleteButton = styled.button`
   text-transform: uppercase;
   border-radius: 5px;
   cursor: pointer;
+`;
+
+const EditButton = styled(DeleteButton)`
+  background-color: #fff;
+  color: black;
 `;
