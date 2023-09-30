@@ -18,6 +18,8 @@ export default function Profile() {
   const user = auth.currentUser;
   const [avatar, setAvatar] = useState(user?.photoURL);
   const [tweets, setTweets] = useState<ITweet[]>([]);
+  const [name, setName] = useState(user?.displayName ?? 'Anonymous');
+  const [editMode, setEditMode] = useState(false);
 
   const onAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
@@ -52,6 +54,24 @@ export default function Profile() {
     setTweets(tweets);
   };
 
+  const onNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
+  };
+
+  const onEditNameClick = async () => {
+    if (!user) return;
+    if (!editMode) setEditMode(true);
+    if (editMode) {
+      try {
+        await updateProfile(user, { displayName: name });
+      } catch (e) {
+        console.log(e);
+      } finally {
+        setEditMode(false);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchTweets();
   }, []);
@@ -78,7 +98,15 @@ export default function Profile() {
         type='file'
         accept='image/*'
       />
-      <Name>{user?.displayName ?? 'Anonymous'}</Name>
+      {editMode ? (
+        <NameInput onChange={onNameChange} type='text' value={name} />
+      ) : (
+        <Name>{name ?? 'Anonymous'}</Name>
+      )}
+      <EditButton onClick={onEditNameClick}>
+        {editMode ? 'Save' : 'Edit'}
+      </EditButton>
+
       <Tweets>
         {tweets.map((tweet) => (
           <Tweet key={tweet.id} {...tweet} />
@@ -117,9 +145,13 @@ const AvatarInput = styled.input`
   display: none;
 `;
 
+const NameInput = styled.input``;
+
 const Name = styled.span`
   font-size: 22px;
 `;
+
+const EditButton = styled.button``;
 
 const Tweets = styled.div`
   display: flex;
